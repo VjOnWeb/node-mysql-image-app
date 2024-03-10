@@ -1,222 +1,240 @@
 <!-- frontend.html -->
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My SQL Image CRUD Node Controlled</title>
-  <link rel="icon" href="asset/crud.jpg" type="image/png">
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js"></script>
-  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-
-  <style>
-    /* Your CSS styles */
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f4f4f4;
-      margin: 20px;
-    }
-
-    h1 {
-      color: #85147b;
-    }
-
-    form {
-      margin-bottom: 20px;
-    }
-
-    ul {
-      list-style: none;
-      padding: 0;
-    }
-
-    .confirmation-card {
-      background-color: #d4edda;
-      border-color: #c3e6cb;
-      color: #155724;
-      padding: 10px;
-      margin-top: 10px;
-      border-radius: 5px;
-      display: none;
-    }
-
-    .confirmation-card.error {
-      background-color: #edd4d9;
-      border-color: #e6c3c3;
-      color: #571515;
-      padding: 10px;
-      margin-top: 10px;
-      border-radius: 5px;
-      display: none;
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h1 class="text-center mt-5">Image CRUD</h1>
-
-    <form id="imageForm" action="/upload" method="post" enctype="multipart/form-data" class="mt-4">
-      <div class="input-group">
-        <div class="custom-file">
-          <input type="file" class="custom-file-input" id="imageInput" name="image" accept="image/*" required>
-          <label class="custom-file-label" for="imageInput">Choose Image</label>
-        </div>
-        <div class="input-group-append">
-          <button class="btn btn-primary" type="submit">Upload</button>
-        </div>
+   <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>My SQL Image CRUD Node Controlled</title>
+      <link rel="icon" href="asset/crud.jpg" type="image/png">
+      <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+      <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js"></script>
+      <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+      <style>
+         /* Your CSS styles */
+         body {
+         font-family: Arial, sans-serif;
+         background-color: #f4f4f4;
+         margin: 20px;
+         }
+         h1 {
+         color: #85147b;
+         }
+         form {
+         margin-bottom: 20px;
+         }
+         ul {
+         list-style: none;
+         padding: 0;
+         }
+         .confirmation-card {
+         background-color: #d4edda;
+         border-color: #c3e6cb;
+         color: #155724;
+         padding: 10px;
+         margin-top: 10px;
+         border-radius: 5px;
+         display: none;
+         }
+         .confirmation-card.error {
+         background-color: #edd4d9;
+         border-color: #e6c3c3;
+         color: #571515;
+         padding: 10px;
+         margin-top: 10px;
+         border-radius: 5px;
+         display: none;
+         }
+      </style>
+   </head>
+   <body>
+      <div class="container">
+         <h1 class="text-center mt-5">Image CRUD</h1>
+         <form id="imageForm" action="/upload" method="post" enctype="multipart/form-data" class="mt-4">
+            <div class="input-group">
+               <div class="custom-file">
+                  <input type="file" class="custom-file-input" id="imageInput" name="image" accept="image/*" required onchange="updateFileName()">
+                  <label class="custom-file-label" for="imageInput" id="imageInputLabel">Choose Image</label>
+               </div>
+               <div class="input-group-append">
+                  <button class="btn btn-primary" type="submit">Upload</button>
+               </div>
+            </div>
+         </form>
+         <!-- Confirmation card -->
+         <div class=" confirmation-card" id="confirmationCard" style="display: none;" role="alert">
+            Image uploaded successfully!
+         </div>
+         <h2 class="mt-5">Uploaded Images</h2>
+         <ul id="imageList" class="list-group"></ul>
       </div>
-    </form>
-
-    <!-- Confirmation card -->
-    <div class=" confirmation-card" id="confirmationCard" style="display: none;" role="alert">
-      Image uploaded successfully!
-    </div>
-
-    <h2 class="mt-5">Uploaded Images</h2>
-    <ul id="imageList" class="list-group"></ul>
-  </div>
-
-  <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-  <script>
-    // Function to fetch and display the list of uploaded images
-// Function to fetch and display the list of uploaded images
-function fetchImages() {
-  fetch('/images')
-    .then(response => response.json())
-    .then(images => {
-      const imageList = $('#imageList');
-      imageList.empty(); // Clear existing list
-      var dynamic_id = 1;
-      images.forEach(image => {
-      const listItem = $('<li>');
-
-        // Display image
-        const img = $('<img>').attr({
-          src: `data:image/jpeg;base64,${image.data.toString('base64')}`, // Display image from data
-          alt: image.filename,
-          id: 'image_' + dynamic_id,
-          class: 'img-thumbnail',
-          width: '400px',
-          'data-toggle': 'modal',
-          'data-target': '#imageModal_' + dynamic_id 
-        });
-        
-        // Create modal
-        const modal = $('<div>').addClass('modal fade').attr({
-          id: 'imageModal_' + dynamic_id,
-          tabindex: '-1',
-          role: 'dialog',
-          'aria-labelledby': 'imageModalLabel_' + dynamic_id,
-          'aria-hidden': 'true'
-        });
-
-        const modalDialog = $('<div>').addClass('modal-dialog modal-lg').attr('role', 'document');
-        modal.append(modalDialog);
-
-        const modalContent = $('<div>').addClass('modal-content');
-        modalDialog.append(modalContent);
-
-        const modalBody = $('<div>').addClass('modal-body');
-        modalContent.append(modalBody);
-
-        const modalImg = $('<img>').attr({
-          src: `data:image/jpeg;base64,${image.data.toString('base64')}`, // Display image from data
-          alt: image,
-          width: 'auto',
-          class: 'img-fluid'
-        });
-        modalBody.append(modalImg);
-
-        const modalFooter = $('<div>').addClass('modal-footer');
-        const closeModalButton = $('<button>').addClass('btn btn-secondary').attr('data-dismiss', 'modal').text('Close it');
-        modalFooter.append(closeModalButton);
-
-        var alert_msg = "Image Deleted Sucessfully"
-        // Delete button inside modal
-        const deleteModalButton = $('<button>').addClass('btn btn-danger').attr('data-dismiss', 'modal').text('Delete').click(() => alert(alert_msg, showConfirmation(image)));
-        modalFooter.append(deleteModalButton);
-
-        modalContent.append(modalFooter);
-
-        listItem.append(img);
-        listItem.append(modal); // Add modal to the list item
-
-        // View button
-        const viewButton = $('<button>').addClass('btn btn-success').text('Download').click(() => window.open(`data:image/jpeg;base64,${image.data.toString('base64')}`, '_blank'));
-        listItem.append(viewButton);
-
-        // Delete button
-        const deleteButton = $('<button>').addClass('btn btn-danger').text('Delete').click(() => alert(alert_msg, showConfirmation(image)));
-        //  const deleteButton = $('<button>').addClass('btn btn-danger').text('Delete').click(() => deleteImage(image));
-          // const deleteButton = $('<button>').addClass('btn btn-danger').text('Delete').click(() => deleteImage(image.id)); // Pass image ID for deletion
-        listItem.append(deleteButton);
-
-        imageList.append(listItem);
-        dynamic_id++;
-      });
-    });
-}
-    // Function to show confirmation card
-    function showConfirmation(image) {
-      const confirmationCard = $('#confirmationCard');
-      confirmationCard.text('Image deleted successfully!').slideDown();
-      setTimeout(() => {
-        confirmationCard.slideUp();
-      }, 3000);
-// Call deleteImage after confirmation card is shown
-      confirmationCard.addClass("error")
-      deleteImage(image.id);
-    }
-
-    // Submit handler for the image upload form
-    $('#imageForm').submit(function (event) {
-      event.preventDefault(); // Prevent the default form submission
-
-      // Use FormData to handle file uploads
-      const formData = new FormData(this);
-
-      // Send the form data using AJAX
-      $.ajax({
-        url: '/upload',
-        method: 'POST',
-        processData: false,
-        contentType: false,
-        data: formData,
-        success: function () {
-          fetchImages(); // Refresh the image list after successful upload
-          $('#imageForm').trigger("reset");
-          // Optionally, you can clear the form here if needed
-          // Show success message
-          const confirmationCard = $('#confirmationCard');
-          confirmationCard.removeClass('error').text('Image uploaded successfully!').slideDown();
-          setTimeout(() => {
-            $('#confirmationCard').slideUp();
-          }, 3000);
-        },
-        error: function () {
-          alert('Failed to upload image');
-        }
-      });
-    });
-
-     // Function to delete an image
-     function deleteImage(id) {
-      $.ajax({
-        url: `/images/${id}`,
-        method: 'DELETE',
-        success: function () {
-          fetchImages(); // Refresh the image list after deletion
-        },
-        error: function () {
-          alert('Failed to delete image');
-        }
-      });
-    }
-
-    // Initial fetch to populate the image list
-    fetchImages();
-  </script>
-</body>
+      <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+      <script>
+         function updateFileName() {
+           const input = document.getElementById('imageInput');
+           const label = document.getElementById('imageInputLabel');
+           const fileName = input.files[0].name;
+           label.innerText = fileName;
+         }
+      </script>
+      <script>
+         // Function to fetch and display the list of uploaded images
+         // Function to fetch and display the list of uploaded images
+         function fetchImages() {
+         fetch('/images')
+         .then(response => response.json())
+         .then(images => {
+           console.log('Fetched images:', images);
+         
+             var dynamic_id = 1;
+             const imageList = $('#imageList');
+             imageList.empty(); // Clear existing list
+             images.forEach(image => {
+             const listItem = $('<li>');
+                 // Display image
+                 const img = $('<img>').attr({
+                   src: `data:image/jpeg;base64,${image.data}`, // Display image from base64 data         
+                   alt: image.filename,
+                   id: 'image_' + dynamic_id,
+                   class: 'img-thumbnail',
+                   width: '400px',
+                   'data-toggle': 'modal',
+                   'data-target': '#imageModal_' + dynamic_id
+                 });
+         
+             
+             // Create modal
+             const modal = $('<div>').addClass('modal fade').attr({
+               id: 'imageModal_' + dynamic_id,
+               tabindex: '-1',
+               role: 'dialog',
+               'aria-labelledby': 'imageModalLabel_' + dynamic_id,
+               'aria-hidden': 'true'
+             });
+         
+             const modalDialog = $('<div>').addClass('modal-dialog modal-lg').attr('role', 'document');
+             modal.append(modalDialog);
+         
+             const modalContent = $('<div>').addClass('modal-content');
+             modalDialog.append(modalContent);
+         
+             const modalBody = $('<div>').addClass('modal-body');
+             modalContent.append(modalBody);
+         
+             const modalImg = $('<img>').attr({
+               src: `data:image/jpeg;base64,${image.data}`, // Display image from base64 data
+               alt: image.filename,
+               width: 'auto',
+               class: 'img-fluid'
+             });
+             modalBody.append(modalImg);
+         
+             const modalFooter = $('<div>').addClass('modal-footer');
+             const closeModalButton = $('<button>').addClass('btn btn-secondary').attr('data-dismiss', 'modal').text('Close it');
+             modalFooter.append(closeModalButton);
+         
+             var alert_msg = "Image Deleted Successfully";
+             // Delete button inside modal
+             const deleteModalButton = $('<button>').addClass('btn btn-danger').attr('data-dismiss', 'modal').text('Delete').click(() => alert(alert_msg, showConfirmation(image)));
+             modalFooter.append(deleteModalButton);
+         
+             modalContent.append(modalFooter);
+         
+             listItem.append(img);
+             listItem.append(modal); // Add modal to the list item
+         
+             // View button
+             const viewButton = $('<button>').addClass('btn btn-info').text('View').click(() => window.open(`data:image/jpeg;base64,${image.data}`, '_blank'));
+             listItem.append(viewButton);
+         
+             // Download button
+             const downloadButton = $('<button>').addClass('btn btn-success').text('Download').click(() => downloadImage(image));
+             listItem.append(downloadButton);
+         
+         
+             // Delete button
+             const deleteButton = $('<button>').addClass('btn btn-danger').text('Delete').click(() => alert(alert_msg, showConfirmation(image)));
+             listItem.append(deleteButton);
+         
+             imageList.append(listItem);
+             dynamic_id++;
+             imageList.append(listItem);
+           });
+         });
+         }
+         
+         
+         // Function to download image
+         function downloadImage(image) {
+         const downloadLink = document.createElement('a');
+         downloadLink.href = `data:image/jpeg;base64,${image.data}`;
+         downloadLink.download = image.filename;
+         downloadLink.click();
+         }
+         // Function to show confirmation card
+         function showConfirmation(image) {
+           const confirmationCard = $('#confirmationCard');
+           confirmationCard.text('Image deleted successfully!').slideDown();
+           setTimeout(() => {
+             confirmationCard.slideUp();
+           }, 3000);
+         // Call deleteImage after confirmation card is shown
+           confirmationCard.addClass("error")
+           deleteImage(image.id);
+         }
+         
+         // Submit handler for the image upload form
+         $('#imageForm').submit(function (event) {
+           event.preventDefault(); // Prevent the default form submission
+         
+           // Use FormData to handle file uploads
+           const formData = new FormData(this);
+         
+           // Send the form data using AJAX
+           $.ajax({
+             url: '/upload',
+             method: 'POST',
+             processData: false,
+             contentType: false,
+             data: formData,
+             success: function () {
+               fetchImages(); // Refresh the image list after successful upload
+               $('#imageForm').trigger("reset");
+               
+               // Optionally, you can clear the form here if needed
+               // Show success message
+               const confirmationCard = $('#confirmationCard');
+               confirmationCard.removeClass('error').text('Image uploaded successfully!').slideDown();
+               setTimeout(() => {
+                 $('#confirmationCard').slideUp();
+               }, 3000);
+               const label = document.getElementById('imageInputLabel');
+         
+               label.innerText = "Upload Image";
+         
+             },
+             error: function () {
+               alert('Failed to upload image');
+             }
+           });
+         });
+         
+          // Function to delete an image
+          function deleteImage(id) {
+           $.ajax({
+             url: `/images/${id}`,
+             method: 'DELETE',
+             success: function () {
+               fetchImages(); // Refresh the image list after deletion
+             },
+             error: function () {
+               alert('Failed to delete image');
+             }
+           });
+         }
+         
+         // Initial fetch to populate the image list
+         fetchImages();
+      </script>
+   </body>
 </html>

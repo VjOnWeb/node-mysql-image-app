@@ -39,7 +39,7 @@ connection.connect((err) => {
   });
 });
 
-app.use(bodyParser.json());
+// app.use(bodyParser.json());
 
 // Set up multer for handling file uploads
 const storage = multer.diskStorage({
@@ -62,20 +62,35 @@ app.get('/', (req, res) => {
 });
 
 app.post('/upload', upload.single('image'), (req, res) => {
-  const { filename, buffer } = req.file; // Get filename and image buffer
+  const { filename } = req.file;
+  const dataStream = fs.createReadStream(req.file.path);
+  let imageData = Buffer.alloc(0);
 
-  // Insert filename and image data into MySQL database
-  const insertQuery = 'INSERT INTO images (filename, data) VALUES (?, ?)';
-  connection.query(insertQuery, [filename, buffer], (err, results) => {
-    if (err) {
-      console.error('Error inserting image into MySQL database:', err);
-      return res.status(500).send('Error uploading image');
-    }
-    res.send('Image uploaded successfully!');
+  // Read data from the stream
+  dataStream.on('data', (chunk) => {
+    imageData = Buffer.concat([imageData, chunk]);
+  });
+
+  // After all data is read
+  dataStream.on('end', () => {
+    // Insert filename and image data into MySQL database
+    const insertQuery = 'INSERT INTO images (filename, data) VALUES (?, ?)';
+    connection.query(insertQuery, [filename, imageData], (err, results) => {
+      if (err) {
+        console.error('Error inserting image into MySQL database:', err);
+        // Cleanup: Remove the temporary file
+        fs.unlinkSync(req.file.path);
+        return res.status(500).send('Error uploading image');
+      }
+      // Cleanup: Remove the temporary file
+      fs.unlinkSync(req.file.path);
+      res.send('Image uploaded successfully!');
+    });
   });
 });
 
 
+// API endpoint to retrieve all images from MySQL database
 
 // API endpoint to retrieve all images from MySQL database
 app.get('/images', (req, res) => {
@@ -92,6 +107,7 @@ app.get('/images', (req, res) => {
     res.json(results);
   });
 });
+
 
 // API endpoint to delete an image from MySQL database and local folder
 app.delete('/images/:id', (req, res) => {
