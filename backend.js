@@ -127,3 +127,5 @@ app.delete('/images/:id', (req, res) => {
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
+
+//http://localhost:6888
